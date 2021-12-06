@@ -1,8 +1,6 @@
 package com.example.tp1;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.arch.core.internal.SafeIterableMap;
-
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -17,7 +15,10 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -28,12 +29,14 @@ import java.util.UUID;
 public class ConnectedDeviceActivity extends AppCompatActivity {
 
     private Button goBackButton;
+    private Button speedUpButton;
+    private Button slowDownButton;
+    private Button saveSpeedButton;
     private TextView nameView;
     private TextView addressView;
+    private ImageView imageView;
 
-    private Button getTemperature;
-
-    private View temperatureView;
+    private CanvasView temperatureView;
 
     private BluetoothAdapter mBtAdapter;
     private BluetoothDevice pairedDevice;
@@ -42,7 +45,6 @@ public class ConnectedDeviceActivity extends AppCompatActivity {
 
     private CustomHandler customHandler;
 
-    private ArrayList<Float> temperatures = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +62,9 @@ public class ConnectedDeviceActivity extends AppCompatActivity {
 
         nameView = findViewById(R.id.connected_name);
         addressView = findViewById(R.id.connected_mac);
+        imageView = findViewById(R.id.iamge_box);
+
+        imageView.setVisibility(View.INVISIBLE);
 
         temperatureView = findViewById(R.id.view_temp);
 
@@ -73,6 +78,8 @@ public class ConnectedDeviceActivity extends AppCompatActivity {
             }
         });
 
+
+
         customHandler = new CustomHandler();
 
         // MANAGE BLUETOOTH
@@ -81,10 +88,26 @@ public class ConnectedDeviceActivity extends AppCompatActivity {
         gattCallBack = new GattCallBack(customHandler, name, address);
         pairedDevice.connectGatt(this, false, gattCallBack);
 
-        getTemperature = findViewById(R.id.button_get_tmp);
-        getTemperature.setOnClickListener(new View.OnClickListener() {
+        //permet d'acceler le rythme de prise de mesure
+        speedUpButton = findViewById(R.id.button_speed_up);
+        speedUpButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                gattCallBack.sendMessage("e");
+                gattCallBack.sendMessage("-");
+            }
+        });
+        //permet de ralentir le rythme de prise de mesure
+        slowDownButton = findViewById(R.id.button_slow_down);
+        slowDownButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                gattCallBack.sendMessage("+");
+            }
+        });
+
+        //permet de ralentir le rythme de prise de mesure
+        saveSpeedButton = findViewById(R.id.button_save_speed);
+        saveSpeedButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                gattCallBack.sendMessage("m");
             }
         });
 
@@ -156,8 +179,24 @@ public class ConnectedDeviceActivity extends AppCompatActivity {
             List<String> valuesList = Arrays.asList(valuesString.split(","));
 
             for (String value : valuesList) {
+                Log.i("value", value);
                 if (value.startsWith("temp=")) {
-                    temperatures.add(Float.parseFloat(value.substring(5)));
+                    float temp = Float.parseFloat(value.substring(5));
+                    Log.i("temp", String.valueOf(temp));
+                    temperatureView.addTemperature(temp);
+                    temperatureView.invalidate();
+                }
+
+                if (value.startsWith("porte=")) {
+                    float box = Float.parseFloat(value.substring(6));
+                    Log.i("porte", String.valueOf(box));
+                    if (box == 1) {
+                        temperatureView.setBoxContent(false);
+                        imageView.setVisibility(View.INVISIBLE);
+                    } else {
+                        temperatureView.setBoxContent(true);
+                        imageView.setVisibility(View.VISIBLE);
+                    }
                     temperatureView.invalidate();
                 }
             }
