@@ -1,6 +1,8 @@
 package com.example.tp1;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -36,11 +38,16 @@ import androidx.core.app.ActivityCompat;
 import java.util.ArrayList;
 import java.util.Set;
 
+/**
+ * Activitée pricipale
+ */
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
     private static final int REQUEST_ENABLE_BT = 0;
+    private static final String CHANNEL_ID = "7f74fac41ad7478d968d3f1749c47d9e";
 
     private Button buttonSearching;
     private Button buttonCancelSearching;
@@ -64,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -88,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
         mBtBroadCastReceiver = new MBtBroadCastReceiver();
 
         // handle ble connection
-        btle_scan_callback  = new Btle_scan_callback();
+        btle_scan_callback = new Btle_scan_callback();
         btle_scanner = mBluetoothAdapter.getBluetoothLeScanner();
 
         customHandler = new CustomHandler();
@@ -100,6 +108,23 @@ public class MainActivity extends AppCompatActivity {
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 
         registerReceiver(mBtBroadCastReceiver, intentFilter);
+        createNotificationChannel();
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 
     private void addListnerBoutton() {
@@ -128,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy () {
+    protected void onDestroy() {
         super.onDestroy();
         btle_scanner.stopScan(btle_scan_callback);
 //        mBtAdapter.cancelDiscovery();
@@ -136,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * return tous les devices deja connect et verif si on a le blue activé
+     *
      * @return ArrayList
      */
     protected ArrayList getAllDevices() {
@@ -163,22 +189,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public void getPermissions(){
-        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+    public void getPermissions() {
+        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this,
                     new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
                     1);
         }
     }
 
-    public void connectToGatt(String name, String address){
+    public void connectToGatt(String name, String address) {
         pairedDevice = mBtAdapter.getRemoteDevice(address);
         gattCallBack = new GattCallBack(customHandler, name, address);
         pairedDevice.connectGatt(this, false, gattCallBack);
     }
 
-    public void disconnectToGatt(String address){
-
+    public void disconnectToGatt(String address) {
+        // TODO
     }
 
     // bluetooth 2.0
@@ -196,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i(TAG, "onReceive: " + "Vous avez changé le mode de bluetooth");
             }
 
-            if(BluetoothDevice.ACTION_FOUND.equals(action)){
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 Log.i(TAG, "onReceive: " + "Find a new device");
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 String deviceName = device.getName();
@@ -216,9 +242,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     class GattCallBack extends BluetoothGattCallback {
-        private CustomHandler handler;
         private final String name;
         private final String address;
+        private final CustomHandler handler;
 
         public GattCallBack(CustomHandler handler, String name, String address) {
             super();
@@ -248,9 +274,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // liste des devices
     class DeviceListAdaptater extends ArrayAdapter<Device> {
-        private Context context;
-        private CustomHandler customHandler;
+
+        private final Context context;
+        private final CustomHandler customHandler;
         private ViewGroup parent;
 
         public DeviceListAdaptater(@NonNull Context context, int resource) {
@@ -264,17 +292,17 @@ public class MainActivity extends AppCompatActivity {
             this.parent = parent;
             LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            if(convertView == null) {
+            if (convertView == null) {
                 convertView = layoutInflater.inflate(R.layout.list_layout, parent, false);
             }
 
             Device device = getItem(position);
 
-            TextView deviceName = (TextView) convertView.findViewById(R.id.device_name);
-            TextView deviceMac = (TextView) convertView.findViewById(R.id.device_mac);
+            TextView deviceName = convertView.findViewById(R.id.device_name);
+            TextView deviceMac = convertView.findViewById(R.id.device_mac);
 
-            Button connect = (Button) convertView.findViewById(R.id.button_connect);
-            Button disconnect = (Button) convertView.findViewById(R.id.button_disconnect);
+            Button connect = convertView.findViewById(R.id.button_connect);
+            Button disconnect = convertView.findViewById(R.id.button_disconnect);
 
             connect.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -301,26 +329,26 @@ public class MainActivity extends AppCompatActivity {
             deviceName.setText(device.name);
             deviceMac.setText(device.mac);
 
-            return  convertView;
+            return convertView;
         }
 
-        public void CustomAdd(Device device){
+        public void CustomAdd(Device device) {
             if (device.name == null || device.mac == null) return;
-            for(int i = 0; i < getCount(); i++)
+            for (int i = 0; i < getCount(); i++)
                 if (getItem(i).equals(device)) return;
             add(device);
         }
 
-        public void clearDevices(){
+        public void clearDevices() {
             clear();
         }
 
         public void resetConnectButtonAdress(String adr) {
             Log.i("resetConnectButtonAdre", adr);
-            for(int i = 0; i < getCount(); i++) {
-                if(getItem(i).mac.equals(adr)){
-                    Button connect = (Button) getView(i, null, this.parent).findViewById(R.id.button_connect);
-                    Button disconnect = (Button) getView(i, null, this.parent).findViewById(R.id.button_disconnect);
+            for (int i = 0; i < getCount(); i++) {
+                if (getItem(i).mac.equals(adr)) {
+                    Button connect = getView(i, null, this.parent).findViewById(R.id.button_connect);
+                    Button disconnect = getView(i, null, this.parent).findViewById(R.id.button_disconnect);
 
                     connect.setEnabled(true);
                     disconnect.setEnabled(false);
@@ -329,20 +357,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // handler qui start une nouvelle activity si on est connecté au serveur gatt
     class CustomHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
             String address = msg.getData().getString("address");
             String name = msg.getData().getString("name");
             Log.i("Handler adress", address);
-            if(msg.getData().getInt("code") == BluetoothProfile.STATE_CONNECTED) {
+            if (msg.getData().getInt("code") == BluetoothProfile.STATE_CONNECTED) {
                 Log.i("Handler status", "STATE_CONNECTED");
                 Intent intent = new Intent(MainActivity.this, ConnectedDeviceActivity.class);
                 intent.putExtra("name", name);
                 intent.putExtra("mac", address);
                 MainActivity.this.startActivity(intent);
 
-            } else if(msg.getData().getInt("code") == BluetoothProfile.STATE_DISCONNECTED) {
+            } else if (msg.getData().getInt("code") == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.i("Handler status", "STATE_DISCONNECTED");
                 adapter.resetConnectButtonAdress(address);
             }

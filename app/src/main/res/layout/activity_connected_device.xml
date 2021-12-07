@@ -38,6 +38,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="save speed" />
+
+            <Button
+                android:id="@+id/button_empty_box"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="empty box" />
         </LinearLayout>
 
 
@@ -50,6 +56,19 @@
             android:id="@+id/connected_mac"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/delay_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="speed : init" />
+
+        <TextView
+            android:id="@+id/delay_time_saved"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="saved speed : init" />
+
 
         <ImageView
             android:id="@+id/iamge_box"

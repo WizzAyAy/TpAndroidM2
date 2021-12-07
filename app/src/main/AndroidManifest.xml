@@ -30,15 +30,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <receiver
-            android:name=".MBtBroadCastReceiverOld"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="BluetoothDevice.ACTION_FOUND" />
-                <action android:name="BluetoothDevice.ACTION_PAIRING_REQUEST" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>

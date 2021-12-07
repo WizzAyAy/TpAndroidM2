@@ -2,7 +2,14 @@ package com.example.tp1;
 
 import java.util.Objects;
 
+/**
+ * Class qui represente un object bluetooth
+ */
+
 public class Device {
+    public String name;
+    public String mac;
+
     public Device(String name, String mac) {
         this.name = name;
         this.mac = mac;
@@ -20,7 +27,4 @@ public class Device {
     public int hashCode() {
         return Objects.hash(name, mac);
     }
-
-    public String name;
-    public String mac;
 }

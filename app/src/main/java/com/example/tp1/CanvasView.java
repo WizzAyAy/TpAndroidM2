@@ -9,15 +9,19 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
+/**
+ * Class qui va afficher le graphique des temperatures
+ */
+
 public class CanvasView extends View {
-    private ArrayList<Float> temperatures = new ArrayList<>();
-    private Paint graphPaint;
-    private Paint BoxPaint;
-    private int TEXTE_SIZE = 25;
+    private final ArrayList<Float> temperatures = new ArrayList<>();
     private boolean isFull = false;
+
+    private final Paint graphPaint;
+    private final Paint BoxPaint;
+    private final int TEXTE_SIZE = 25;
 
     public CanvasView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -30,11 +34,11 @@ public class CanvasView extends View {
     }
 
     public void addTemperature(float parseFloat) {
-        if(temperatures.size() > 45) temperatures.remove(0);
+        if (temperatures.size() > 45) temperatures.remove(0);
         temperatures.add(parseFloat);
     }
 
-    public void setBoxContent(boolean b){
+    public void setBoxContent(boolean b) {
         isFull = b;
     }
 
@@ -58,29 +62,27 @@ public class CanvasView extends View {
         // axe des degres
         for (int i = 1; i <= nbStep; i++) {
 
-            canvas.drawText(Integer.toString(stepTemp), 25, (100 + stepDegresPixel * i)  + TEXTE_SIZE / 2, graphPaint);
-            if(i != nbStep)
-            canvas.drawLine(75, (100 + stepDegresPixel * i), 125, (100 + stepDegresPixel * i), graphPaint);
+            canvas.drawText(Integer.toString(stepTemp), 25, (100 + stepDegresPixel * i) + TEXTE_SIZE / 2, graphPaint);
+            if (i != nbStep)
+                canvas.drawLine(75, (100 + stepDegresPixel * i), 125, (100 + stepDegresPixel * i), graphPaint);
 
             stepTemp--;
         }
 
         // les points des temps
-        for (int i = 1; i <= temperatures.size(); i++){
-            if(i != 1){
+        for (int i = 1; i <= temperatures.size(); i++) {
+            if (i != 1) {
                 canvas.drawLine(
                         20 * (i - 1) + 100,
-                        (maxStepTemp - temperatures.get(i-2) + 1) * stepDegresPixel + 100,
+                        (maxStepTemp - temperatures.get(i - 2) + 1) * stepDegresPixel + 100,
                         20 * i + 100,
-                        (maxStepTemp - temperatures.get(i-1) + 1) * stepDegresPixel + 100,
+                        (maxStepTemp - temperatures.get(i - 1) + 1) * stepDegresPixel + 100,
                         graphPaint);
             }
         }
 
         canvas.drawLine(100, 100, 100, canvas.getHeight() - 100, graphPaint);
-        canvas.drawLine(100, canvas.getHeight() - 100, canvas.getWidth() - 100, canvas.getHeight() - 100 , graphPaint);
-
-
+        canvas.drawLine(100, canvas.getHeight() - 100, canvas.getWidth() - 100, canvas.getHeight() - 100, graphPaint);
     }
 
     @Override
