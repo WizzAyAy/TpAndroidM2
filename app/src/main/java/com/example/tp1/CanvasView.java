@@ -17,11 +17,10 @@ import java.util.ArrayList;
 
 public class CanvasView extends View {
     private final ArrayList<Float> temperatures = new ArrayList<>();
-    private boolean isFull = false;
-
     private final Paint graphPaint;
     private final Paint BoxPaint;
     private final int TEXTE_SIZE = 25;
+    private boolean isFull = false;
 
     public CanvasView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);

@@ -28,6 +28,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -48,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_ENABLE_BT = 0;
     private static final String CHANNEL_ID = "7f74fac41ad7478d968d3f1749c47d9e";
+
+    private Context context;
 
     private Button buttonSearching;
     private Button buttonCancelSearching;
@@ -73,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+        context = this;
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -203,10 +208,6 @@ public class MainActivity extends AppCompatActivity {
         pairedDevice.connectGatt(this, false, gattCallBack);
     }
 
-    public void disconnectToGatt(String address) {
-        // TODO
-    }
-
     // bluetooth 2.0
     class MBtBroadCastReceiver extends BroadcastReceiver {
 
@@ -302,29 +303,13 @@ public class MainActivity extends AppCompatActivity {
             TextView deviceMac = convertView.findViewById(R.id.device_mac);
 
             Button connect = convertView.findViewById(R.id.button_connect);
-            Button disconnect = convertView.findViewById(R.id.button_disconnect);
 
             connect.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    Log.i("deviceName", (String) deviceName.getText());
-                    Log.i("deviceMac", (String) deviceMac.getText());
-
                     connectToGatt((String) deviceName.getText(), (String) deviceMac.getText());
-                    disconnect.setEnabled(true);
-                    connect.setEnabled(false);
                 }
             });
 
-            disconnect.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    Log.i("deviceName", (String) deviceName.getText());
-                    Log.i("deviceMac", (String) deviceMac.getText());
-
-                    disconnectToGatt((String) deviceMac.getText());
-                    disconnect.setEnabled(false);
-                    connect.setEnabled(true);
-                }
-            });
 
             deviceName.setText(device.name);
             deviceMac.setText(device.mac);
@@ -342,19 +327,6 @@ public class MainActivity extends AppCompatActivity {
         public void clearDevices() {
             clear();
         }
-
-        public void resetConnectButtonAdress(String adr) {
-            Log.i("resetConnectButtonAdre", adr);
-            for (int i = 0; i < getCount(); i++) {
-                if (getItem(i).mac.equals(adr)) {
-                    Button connect = getView(i, null, this.parent).findViewById(R.id.button_connect);
-                    Button disconnect = getView(i, null, this.parent).findViewById(R.id.button_disconnect);
-
-                    connect.setEnabled(true);
-                    disconnect.setEnabled(false);
-                }
-            }
-        }
     }
 
     // handler qui start une nouvelle activity si on est connecté au serveur gatt
@@ -363,18 +335,27 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             String address = msg.getData().getString("address");
             String name = msg.getData().getString("name");
+            String messageToast = "";
             Log.i("Handler adress", address);
+
             if (msg.getData().getInt("code") == BluetoothProfile.STATE_CONNECTED) {
                 Log.i("Handler status", "STATE_CONNECTED");
                 Intent intent = new Intent(MainActivity.this, ConnectedDeviceActivity.class);
                 intent.putExtra("name", name);
                 intent.putExtra("mac", address);
                 MainActivity.this.startActivity(intent);
+                messageToast = "connecté à " + name;
+
 
             } else if (msg.getData().getInt("code") == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.i("Handler status", "STATE_DISCONNECTED");
-                adapter.resetConnectButtonAdress(address);
+                messageToast = "Impossible de se connecter à " + name;
+
             }
+            CharSequence text = messageToast;
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(context, text, duration);
+            toast.show();
         }
     }
 }

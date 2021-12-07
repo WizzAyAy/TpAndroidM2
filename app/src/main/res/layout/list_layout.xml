@@ -29,14 +29,14 @@
             android:text="connect"
             android:layout_weight="0"/>
 
-        <Button
-            android:id="@+id/button_disconnect"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="disconnect"
-            android:backgroundTint="#FF0000"
-            android:enabled="false"
-            android:layout_weight="0"/>
+<!--        <Button-->
+<!--            android:id="@+id/button_disconnect"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="disconnect"-->
+<!--            android:backgroundTint="#FF0000"-->
+<!--            android:enabled="false"-->
+<!--            android:layout_weight="0"/>-->
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

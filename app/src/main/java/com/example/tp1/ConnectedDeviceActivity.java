@@ -34,8 +34,12 @@ import java.util.UUID;
 public class ConnectedDeviceActivity extends AppCompatActivity {
 
     private static final String CHANNEL_ID = "7f74fac41ad7478d968d3f1749c47d9e";
-    private Context context;
 
+    //notification
+    NotificationCompat.Builder builder;
+    NotificationManagerCompat notificationManager;
+
+    private Context context;
     private Button goBackButton;
     private Button speedUpButton;
     private Button slowDownButton;
@@ -46,23 +50,14 @@ public class ConnectedDeviceActivity extends AppCompatActivity {
     private TextView delayView;
     private TextView delaySavedView;
     private ImageView imageView;
-
     private CanvasView temperatureView;
-
     private BluetoothAdapter mBtAdapter;
     private BluetoothDevice pairedDevice;
-
     private GattCallBack gattCallBack;
-
     private CustomHandler customHandler;
-
     private int delaySpeed;
     private int delaySpeedSaved;
-
-    //notification
-    NotificationCompat.Builder builder;
-    NotificationManagerCompat notificationManager;
-
+    private BluetoothGatt m_gatt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +90,11 @@ public class ConnectedDeviceActivity extends AppCompatActivity {
         goBackButton = findViewById(R.id.button_go_back);
         goBackButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
+                m_gatt.close();
+                CharSequence text = "deconnecté de " + name;
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
                 finish();
             }
         });
@@ -156,7 +155,7 @@ public class ConnectedDeviceActivity extends AppCompatActivity {
         // notification builder
         builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.box_foreground)
-                .setContentTitle("Courrier dans la boite de "+ name +" !")
+                .setContentTitle("Courrier dans la boite de " + name + " !")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(resultIntent)
                 .setAutoCancel(true);
@@ -164,12 +163,16 @@ public class ConnectedDeviceActivity extends AppCompatActivity {
         notificationManager = NotificationManagerCompat.from(this);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        m_gatt.close();
+    }
 
     class GattCallBack extends BluetoothGattCallback {
         private final String name;
         private final String address;
         private final CustomHandler customHandler;
-        private BluetoothGatt m_gatt;
 
         private BluetoothGattService serviceHM10;
         private BluetoothGattCharacteristic characteristicHM10;
